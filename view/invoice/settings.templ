@@ -15,11 +15,11 @@ templ settings() {
 			hx-get="/boards"
 			hx-indicator="#htmx-indicator"
 			hx-validate
-			x-data="{ trello: { key: '', token: '' }}"
-			x-init="trello = { key: $store.trelloAuth.key, token: $store.trelloAuth.token }"
+			x-data="{ unsaved: { key: '', token: '' }}"
+			x-init="unsaved = { key: $store.trelloAuth.key, token: $store.trelloAuth.token }"
 			x-on:submit="canSubmit = false;
-                         $store.trelloAuth.key = trello.key;
-                         $store.trelloAuth.token = trello.token;
+                         $store.trelloAuth.key = unsaved.key;
+                         $store.trelloAuth.token = unsaved.token;
                          "
 			class="mb-0"
 		>
@@ -27,13 +27,13 @@ templ settings() {
 				@hiddenInput("trello-api-key", "Trello API key",
                     templ.Attributes{
                                      "required": true, "minlength": "32", "maxlength": "32",
-                                     "x-model": "trello.key",
+                                     "x-model": "unsaved.key",
                                      "x-on:input": "canSubmit = true",
                                      })
 				@hiddenInput("trello-api-token", "Trello API token",
                     templ.Attributes{
                                      "required": true, "minlength": "76", 
-                                     "x-model": "trello.token",
+                                     "x-model": "unsaved.token",
                                      "x-on:input": "canSubmit = true",
                                      })
 			</div>
