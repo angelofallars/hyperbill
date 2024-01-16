@@ -14,7 +14,6 @@ templ settings() {
 		<form
 			hx-get="/boards"
 			hx-indicator="#htmx-indicator"
-			hx-validate
 			x-data="{ unsaved: { key: '', token: '' }}"
 			x-init="unsaved = { key: $store.trelloAuth.key, token: $store.trelloAuth.token }"
 			x-on:submit="canSubmit = false;
