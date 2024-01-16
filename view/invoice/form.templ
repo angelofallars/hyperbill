@@ -123,25 +123,28 @@ templ settings() {
 	>
 		<summary>Settings</summary>
 		<form
-			id="trello-auth"
-			class="mb-0"
 			hx-get="/boards"
 			hx-indicator="#htmx-indicator"
 			hx-validate
+			x-data="{ trello: { key: '', token: '' }}"
+			x-init="trello = { key: $store.trelloAuth.key, token: $store.trelloAuth.token }"
 			x-on:submit="canSubmit = false;
-                         $store.trelloAuth.key = document.querySelector('#trello-api-key').value;
-                         $store.trelloAuth.token = document.querySelector('#trello-api-token').value;
+                         $store.trelloAuth.key = trello.key;
+                         $store.trelloAuth.token = trello.token;
                          "
+			class="mb-0"
 		>
 			<div class="mb-0">
 				@hiddenInput("trello-api-key", "Trello API key",
-                    templ.Attributes{"required": true, "minlength": "32", "maxlength": "32",
-                                     "x-init": "$el.value = $store.trelloAuth.key",
+                    templ.Attributes{
+                                     "required": true, "minlength": "32", "maxlength": "32",
+                                     "x-model": "trello.key",
                                      "x-on:input": "canSubmit = true",
                                      })
 				@hiddenInput("trello-api-token", "Trello API token",
-                    templ.Attributes{"required": true, "minlength": "76", 
-                                     "x-init": "$el.value = $store.trelloAuth.token",
+                    templ.Attributes{
+                                     "required": true, "minlength": "76", 
+                                     "x-model": "trello.token",
                                      "x-on:input": "canSubmit = true",
                                      })
 			</div>
