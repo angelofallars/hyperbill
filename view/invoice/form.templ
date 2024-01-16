@@ -7,7 +7,7 @@ import (
 	"github.com/angelofallars/gotemplate/view/svg"
 )
 
-const inputStyle = "border px-2 h-7 bg-transparent disabled:text-gray-500 border-slate-400 border-1.5 rounded focus:border-transparent focus:ring-green-700 focus:outline-none focus:ring-2 selection:bg-green-500"
+const inputStyle = "border px-2 h-7 bg-transparent disabled:text-gray-500 border-slate-400 border-1.5 rounded focus:border-transparent focus:ring-green-700 invalid:border-red-500 invalid:focus:ring-red-700 focus:outline-none focus:ring-2 selection:bg-green-500"
 
 templ MakeInvoiceForm() {
 	@component.Card("max-w-[24rem]") {
@@ -47,6 +47,7 @@ templ MakeInvoiceForm() {
                         },
                     }"
 					x-init="validate()"
+					x-on:input="validate()"
 					x-on:change="validate()"
 				>
 					@input("start-date", "Start date",
@@ -118,34 +119,54 @@ templ Boards(props []BoardProps) {
 }
 
 templ input(id, label string, inputAttrs templ.Attributes) {
-	<div class="flex-1">
+	<div
+		class="flex-1"
+		x-data="{ validationMessage: '' }"
+	>
 		<label for={ id } class="block mt-1.5 font-medium text-gray-900">{ label }</label>
 		<input
 			{ inputAttrs... }
 			name={ id }
 			id={ id }
 			class={ inputStyle, "w-full" }
+			x-on:input="validationMessage = $el.validationMessage"
+			x-on:change="validationMessage = $el.validationMessage"
 		/>
+		<p
+			x-text="validationMessage"
+			class="text-xs text-red-700"
+		></p>
 	</div>
 }
 
 templ currencyInput(id, label string) {
-	<div class="flex flex-row items-center gap-1 flex-1">
+	<div
+		class="flex flex-row items-start gap-1 flex-1"
+		x-data="{ validationMessage: '' }"
+	>
 		<label for={ id } class="font-medium text-gray-900">{ label }</label>
-		<div class="relative">
-			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1">
-				<span class="text-gray-500">$</span>
+		<div>
+			<div class="relative">
+				<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1">
+					<span class="text-gray-500">$</span>
+				</div>
+				<input
+					type="number"
+					step="0.01"
+					min="0"
+					name={ id }
+					id={ id }
+					class={ inputStyle, "pl-4 mr-auto max-w-40" }
+					required
+					x-on:input="validationMessage = $el.validationMessage"
+					x-on:change="validationMessage = $el.validationMessage"
+					{ persistInput(id)... }
+				/>
 			</div>
-			<input
-				type="number"
-				step="0.01"
-				min="0"
-				name={ id }
-				id={ id }
-				class={ inputStyle, "pl-4 mr-auto max-w-40" }
-				required
-				{ persistInput(id)... }
-			/>
+			<p
+				x-text="validationMessage"
+				class="text-xs text-red-700"
+			></p>
 		</div>
 	</div>
 }

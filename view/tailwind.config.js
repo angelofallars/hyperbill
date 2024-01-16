@@ -7,7 +7,11 @@ module.exports = {
       display: ['IBM Plex Sans', 'Menlo', 'monospace'],
       body: ['IBM Plex Sans', 'Menlo', 'monospace'],
     },
-    extend: {},
+    extend: {
+      fontSize: {
+        xs: '0.7rem',
+      },
+    },
   },
   plugins: [],
   variants: {
