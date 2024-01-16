@@ -32,31 +32,30 @@ templ MakeInvoiceForm() {
 		>
 			<div class="flex flex-col flex-1">
 				@Boards(nil)
-				<div class="flex flex-row flex-wrap gap-x-1.5 justify-stretch">
+				<div
+					class="flex flex-row flex-wrap gap-x-1.5 justify-stretch"
+					x-data="{
+                        startDate: $persist('').as('invoice_start-date'),
+                        endDate: $persist('').as('invoice_end-date'),
+                        async validate() {
+                          const elEndDate = $el.querySelector('#end-date');
+                          if (Date.parse(this.startDate) >= Date.parse(this.endDate)) {
+                            elEndDate.setCustomValidity('End date must be later than start date.');
+                          } else {
+                            elEndDate.setCustomValidity('');
+                          }
+                        },
+                    }"
+					x-init="validate()"
+					x-on:change="validate()"
+				>
 					@input("start-date", "Start date",
                             templ.Attributes{"type": "date", "required": "true",
+                            "x-model": "startDate",
                             })
 					@input("end-date", "End date",
                             templ.Attributes{"type": "date", "required": "true",
-                            "x-data": `{
-                               async validate() {
-                                 const startDate = Date.parse(document.querySelector('#start-date'))
-                                                   || await new Promise(r => setTimeout(r, 20))
-                                                   && Date.parse(document.querySelector('#start-date'));
-                                 if (Date.parse($el.value) <= Date.parse(document.querySelector('#start-date').value)) {
-                                   $el.setCustomValidity('End date must be later than start date.');
-                                 } else {
-                                   $el.setCustomValidity('');
-                                 }
-                               },
-                               value: $persist('').as('invoice_end-date'),
-                            }`,
-                            "x-on:change":
-                            `validate();
-                             value = $el.value;`,
-                            "x-init":
-                            `validate();
-                             $el.value = value`,
+                            "x-model": "endDate",
                             })
 				</div>
 			</div>
@@ -122,7 +121,6 @@ templ input(id, label string, inputAttrs templ.Attributes) {
 			name={ id }
 			id={ id }
 			class={ inputStyle, "w-full" }
-			{ persistInput(id)... }
 		/>
 	</div>
 }
