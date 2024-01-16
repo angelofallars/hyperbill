@@ -196,7 +196,7 @@ templ input(id, label string, inputAttrs templ.Attributes) {
 
 func persistForm(name string) templ.Attributes {
 	return templ.Attributes{
-		"x-init":      "$el.value = value, 100",
+		"x-init":      "$el.value = value",
 		"x-data":      fmt.Sprintf("{ value: $persist('').as('invoice_%s') }", name),
 		"x-on:change": "value = $el.value",
 	}
