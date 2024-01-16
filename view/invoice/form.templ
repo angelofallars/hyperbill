@@ -44,6 +44,8 @@ templ MakeInvoiceForm() {
                           } else {
                             elEndDate.setCustomValidity('');
                           }
+                          // Need to do this to show endDate validation error when startDate is modified
+                          elEndDate.dispatchEvent(new CustomEvent('change', {}));
                         },
                     }"
 					x-init="validate()"
