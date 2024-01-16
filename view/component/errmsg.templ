@@ -43,7 +43,7 @@ templ errorMessage(err error) {
 				{ err.Error() }
 			</p>
 		</div>
-		@closeButton(templ.Attributes{"@click": "open = ! open"}, " text-red-800")
+		@closeButton(templ.Attributes{"@click": "open = ! open"}, "text-red-800")
 	</div>
 }
 
@@ -62,7 +62,7 @@ templ infoMessage(err error) {
 				{ err.Error() }
 			</p>
 		</div>
-		@closeButton(templ.Attributes{"@click": "open = ! open"}, " text-sky-800")
+		@closeButton(templ.Attributes{"@click": "open = ! open"}, "text-sky-800")
 	</div>
 }
 
