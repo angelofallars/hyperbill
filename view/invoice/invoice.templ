@@ -1,0 +1,58 @@
+package invoice
+
+import "fmt"
+import "github.com/angelofallars/gotemplate/view/component"
+import "github.com/angelofallars/gotemplate/internal/invoice"
+
+templ InvoiceCard() {
+	@component.Card("max-w-[30rem]") {
+		<h2 class="mr-auto mb-1.5 text-left text-2xl font-bold text-gray-900">Invoice</h2>
+		<div id="invoice" class="h-full">
+			No invoice yet.
+		</div>
+	}
+}
+
+templ Invoice(data invoice.Invoice) {
+	<div class="flex flex-col justify-between h-full">
+		<p>
+			Billing Period: { data.StartDate.Format("01/02/2006") }-{ data.EndDate.Format("01/02/2006") }
+		</p>
+		<table class="mt-3 w-full text-left text-gray-900">
+			<tr>
+				<th>Expertise</th>
+				<th>Price/Hour</th>
+				<th>Hours</th>
+				<th>Total</th>
+			</tr>
+			@categoryReport("T5", data.T5Report)
+			@categoryReport("T4", data.T4Report)
+			@categoryReport("T3", data.T3Report)
+			@categoryReport("T2", data.T2Report)
+			@categoryReport("T1", data.T1Report)
+			<tr class="mt-4 h-8 border-t border-t-gray-300">
+				<td></td>
+				<td></td>
+				<td></td>
+				<td class="font-bold">${ fmt.Sprintf("%.2f", data.TotalPrice) }</td>
+			</tr>
+		</table>
+		<div class="justify-self-end mt-5 flex flex-1 gap-3 justify-end items-end">
+			@component.Button(templ.Attributes{"disabled": true}) {
+				Save to CSV (soon!)
+			}
+			@component.Button(templ.Attributes{"disabled": true}) {
+				Save to PDF (soon!)
+			}
+		</div>
+	</div>
+}
+
+templ categoryReport(categoryName string, report invoice.CategoryReport) {
+	<tr class="mt-4 h-8 border-t border-t-gray-300">
+		<td class="font-medium">{ categoryName }</td>
+		<td>${ fmt.Sprint(report.PricePerHour) }</td>
+		<td>{ fmt.Sprintf("%.2f", float64(report.TimeSpent.Hours())) }</td>
+		<td>${ fmt.Sprintf("%.2f", report.Price) }</td>
+	</tr>
+}

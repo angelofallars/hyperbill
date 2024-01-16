@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.shadow-solid-primary {
+  box-shadow: 10px 10px var(--color-primary);
+}
+
+.htmx-indicator{
+  opacity:0;
+  transition: opacity 500ms ease-in;
+}
+
+.htmx-request .htmx-indicator{
+  opacity:1
+}
+
+.htmx-request.htmx-indicator{
+  opacity:1
+}

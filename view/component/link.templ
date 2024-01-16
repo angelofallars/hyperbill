@@ -1,0 +1,13 @@
+package component
+
+templ Link(href string) {
+	<a class="underline text-semibold text-sky-700" href={ templ.URL(href) }>
+		{ children... }
+	</a>
+}
+
+templ LightLink(href string) {
+	<a class="underline text-semibold text-sky-400" href={ templ.URL(href) }>
+		{ children... }
+	</a>
+}

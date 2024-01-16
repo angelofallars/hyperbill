@@ -1,0 +1,15 @@
+package component
+
+import "strings"
+
+templ Button(attrs templ.Attributes, classes ...string) {
+	<button
+		{ attrs... }
+		type="button"
+		class={ "w-fit shadow-sm font-semibold bg-green-600 hover:bg-green-700 border-b-[4px] disabled:opacity-75 disabled:bg-gray-600 disabled:border-gray-700 border-green-700 hover:border-green-800 enabled:active:translate-y-1 text-white py-1.5 px-3 rounded " + strings.Join(classes, " ") }
+		x-data="{ buttonDisabledClass: 'disabled:cursor-not-allowed'}"
+		x-bind:class="buttonDisabledClass"
+	>
+		{ children... }
+	</button>
+}
