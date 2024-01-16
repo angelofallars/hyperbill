@@ -68,7 +68,7 @@ templ MakeInvoiceForm() {
 				@currencyInput("t1", "T1")
 			</fieldset>
 			<div class="mt-5 ml-auto flex flex-col items-end ">
-				<p id="validation-error" class="text-right text-sm text-red-700 max-w-[15rem]"></p>
+				<p id="validation-error" class="text-right text-sm text-red-700 max-w-[20rem]"></p>
 				@component.Button(templ.Attributes{
                         "type": "submit",
                         "id": "submit-invoice",
@@ -84,6 +84,12 @@ templ MakeInvoiceForm() {
 		<div id="errors" class="mt-3"></div>
 		@settings()
 	}
+}
+
+templ SetErrorMessage(message string) {
+	<span id="validation-error" hx-swap-oob="innerHTML">
+		{ message }
+	</span>
 }
 
 type BoardProps struct {

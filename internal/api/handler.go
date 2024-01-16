@@ -46,12 +46,16 @@ func handleGetBoards() http.HandlerFunc {
 
 		boards, err := client.GetBoards()
 		if err != nil {
-			// Disable submit by dispatching an event for Alpine.js
 			shouldDisableSubmit := errors.Is(err, trello.ErrInvalidKey) || errors.Is(err, trello.ErrInvalidToken)
 			if shouldDisableSubmit {
-				component.RenderError(w, http.StatusUnauthorized, err, func(r htmx.Response) htmx.Response {
-					return r.AddTrigger(htmx.Trigger("disable-submit"))
-				})
+				_ = htmx.NewResponse().
+					StatusCode(http.StatusUnauthorized).
+					AddTrigger(htmx.Trigger("disable-submit")).
+					Reswap(htmx.SwapNone).
+					RenderTempl(r.Context(), w,
+						invoiceview.SetErrorMessage(
+							"Invalid Trello authorization credentials. Make sure they are correct and try again.",
+						))
 			} else {
 				component.RenderError(w, http.StatusInternalServerError, err)
 			}
@@ -72,6 +76,9 @@ func handleGetBoards() http.HandlerFunc {
 			Reselect("#board-id").
 			AddTrigger(htmx.Trigger("enable-submit")).
 			RenderTempl(r.Context(), w, invoiceview.Boards(props))
+
+		_ = invoiceview.SetErrorMessage("").
+			Render(r.Context(), w)
 	}
 }
 

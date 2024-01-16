@@ -1,11 +1,10 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/angelofallars/gotemplate/internal/header"
-	"github.com/angelofallars/gotemplate/view/component"
+	invoiceview "github.com/angelofallars/gotemplate/view/invoice"
 	"github.com/angelofallars/htmx-go"
 )
 
@@ -15,9 +14,15 @@ func authRequired(f http.HandlerFunc) http.HandlerFunc {
 		trelloAPIToken := r.Header.Get(header.TrelloAuthToken)
 
 		if trelloAPIKey == "" || trelloAPIToken == "" {
-			component.RenderInfo(w, http.StatusUnauthorized, fmt.Errorf("To use this application, the Trello API key and token need to be supplied in the settings."), func(r htmx.Response) htmx.Response {
-				return r.AddTrigger(htmx.Trigger("open-settings"))
-			})
+			_ = htmx.NewResponse().
+				StatusCode(http.StatusUnauthorized).
+				Reswap(htmx.SwapNone).
+				AddTrigger(htmx.Trigger("disable-submit")).
+				AddTrigger(htmx.Trigger("open-settings")).
+				RenderTempl(r.Context(), w,
+					invoiceview.SetErrorMessage(
+						"To use this application, the Trello API key and token need to be supplied in the settings.",
+					))
 			return
 		}
 
