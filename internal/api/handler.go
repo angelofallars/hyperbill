@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
+	"github.com/angelofallars/gotemplate/internal/header"
 	"github.com/angelofallars/gotemplate/internal/invoice"
 	"github.com/angelofallars/gotemplate/pkg/trello"
 	"github.com/angelofallars/gotemplate/view/component"
@@ -39,8 +40,8 @@ func handleIndex() http.HandlerFunc {
 
 func handleGetBoards() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		trelloAPIKey := r.Header.Get("X-Trello-Api-Key")
-		trelloAPIToken := r.Header.Get("X-Trello-Api-Token")
+		trelloAPIKey := r.Header.Get(header.TrelloAuthKey)
+		trelloAPIToken := r.Header.Get(header.TrelloAuthToken)
 		client := trello.New(trelloAPIKey, trelloAPIToken)
 
 		boards, err := client.GetBoards()
@@ -99,8 +100,8 @@ func handleCreateInvoice() http.HandlerFunc {
 			return
 		}
 
-		trelloAPIKey := r.Header.Get("X-Trello-Api-Key")
-		trelloAPIToken := r.Header.Get("X-Trello-Api-Token")
+		trelloAPIKey := r.Header.Get(header.TrelloAuthKey)
+		trelloAPIToken := r.Header.Get(header.TrelloAuthToken)
 		client := trello.New(trelloAPIKey, trelloAPIToken)
 
 		cards, err := client.GetCards(req.trelloBoardID)

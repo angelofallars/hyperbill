@@ -2,6 +2,7 @@ package invoice
 
 import "github.com/angelofallars/gotemplate/view/component"
 import "github.com/angelofallars/gotemplate/view/svg"
+import "github.com/angelofallars/gotemplate/internal/header"
 
 templ settings() {
 	<details
@@ -50,24 +51,26 @@ templ settings() {
 				}
 			</div>
 		</form>
-		<script>
-            document.addEventListener('alpine:initializing', () => {
-                Alpine.store("trelloAuth", {
-                    key: Alpine.$persist("").as("trelloAuth-key"),
-                    token: Alpine.$persist("").as("trelloAuth-token"),
-                });
-
-                htmx.on("htmx:configRequest", evt => {
-                    evt.detail.headers["X-Trello-API-Key"] = Alpine.store("trelloAuth").key;
-                    evt.detail.headers["X-Trello-API-Token"] = Alpine.store("trelloAuth").token;
-                });
-
-                // Need to sleep so that htmx:configRequest actually adds
-                // the Trello key request headers
-                setTimeout(() => htmx.ajax("GET", "/boards"), 100);
-            })
-        </script>
+		@setupAuth(header.TrelloAuthKey, header.TrelloAuthToken)
 	</details>
+}
+
+script setupAuth(headerAuthKey, headerAuthToken string) {
+    document.addEventListener('alpine:initializing', () => {
+        Alpine.store("trelloAuth", {
+            key: Alpine.$persist("").as("trelloAuth-key"),
+            token: Alpine.$persist("").as("trelloAuth-token"),
+        });
+
+        htmx.on("htmx:configRequest", evt => {
+            evt.detail.headers[headerAuthKey] = Alpine.store("trelloAuth").key;
+            evt.detail.headers[headerAuthToken] = Alpine.store("trelloAuth").token;
+        });
+
+        // Need to sleep so that htmx:configRequest actually adds
+        // the Trello key request headers
+        setTimeout(() => htmx.ajax("GET", "/boards"), 100);
+    })
 }
 
 templ hiddenInput(id, label string, inputAttrs templ.Attributes) {
