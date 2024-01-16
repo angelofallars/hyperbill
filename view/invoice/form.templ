@@ -21,10 +21,9 @@ templ Boards(props []BoardProps) {
 		class={ inputStyle, "overflow-ellipsis max-w-[20rem]" }
 		x-data="{ value: $persist('').as('invoice_board-id') }"
 		x-on:change="value = $el.value"
+		x-init="$refs[value]?.setAttribute('selected', '')"
 		if len(props) == 0 {
 			disabled
-		} else {
-			x-init="$refs[value].setAttribute('selected', '')"
 		}
 	>
 		if len(props) == 0 {
