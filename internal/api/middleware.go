@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/angelofallars/gotemplate/internal/header"
-	invoiceview "github.com/angelofallars/gotemplate/view/invoice"
+	"github.com/angelofallars/hyperbill/internal/header"
+	invoiceview "github.com/angelofallars/hyperbill/view/invoice"
 	"github.com/angelofallars/htmx-go"
 )
 

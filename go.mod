@@ -1,4 +1,4 @@
-module github.com/angelofallars/gotemplate
+module github.com/angelofallars/hyperbill
 
 go 1.21.6
 

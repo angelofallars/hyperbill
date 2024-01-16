@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/angelofallars/gotemplate/pkg/trello"
+	"github.com/angelofallars/hyperbill/pkg/trello"
 	"github.com/go-chi/chi/v5"
 )
 

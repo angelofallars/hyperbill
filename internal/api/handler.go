@@ -14,11 +14,11 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/angelofallars/gotemplate/internal/header"
-	"github.com/angelofallars/gotemplate/internal/invoice"
-	"github.com/angelofallars/gotemplate/pkg/trello"
-	"github.com/angelofallars/gotemplate/view/component"
-	invoiceview "github.com/angelofallars/gotemplate/view/invoice"
+	"github.com/angelofallars/hyperbill/internal/header"
+	"github.com/angelofallars/hyperbill/internal/invoice"
+	"github.com/angelofallars/hyperbill/pkg/trello"
+	"github.com/angelofallars/hyperbill/view/component"
+	invoiceview "github.com/angelofallars/hyperbill/view/invoice"
 	"github.com/angelofallars/htmx-go"
 )
 

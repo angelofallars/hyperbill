@@ -7,8 +7,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/angelofallars/gotemplate/internal/api"
-	"github.com/angelofallars/gotemplate/pkg/trello"
+	"github.com/angelofallars/hyperbill/internal/api"
+	"github.com/angelofallars/hyperbill/pkg/trello"
 )
 
 func main() {
