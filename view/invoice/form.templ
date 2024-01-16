@@ -123,7 +123,7 @@ templ input(id, label string, inputAttrs templ.Attributes) {
 			name={ id }
 			id={ id }
 			class={ inputStyle, "w-full" }
-			{ persistForm(id)... }
+			{ persistInput(id)... }
 		/>
 	</div>
 }
@@ -142,13 +142,13 @@ templ currencyInput(name string, display string) {
 				id={ name }
 				class={ inputStyle, " pl-4 mr-auto max-w-40" }
 				required
-				{ persistForm(name)... }
+				{ persistInput(name)... }
 			/>
 		</div>
 	</div>
 }
 
-func persistForm(name string) templ.Attributes {
+func persistInput(name string) templ.Attributes {
 	return templ.Attributes{
 		"x-init":      "$el.value = value",
 		"x-data":      fmt.Sprintf("{ value: $persist('').as('invoice_%s') }", name),
