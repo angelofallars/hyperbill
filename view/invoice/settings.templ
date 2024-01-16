@@ -1,0 +1,99 @@
+package invoice
+
+import "github.com/angelofallars/gotemplate/view/component"
+import "github.com/angelofallars/gotemplate/view/svg"
+
+templ settings() {
+	<details
+		class="flex flex-col mt-3"
+		x-data="{ canSubmit: false }"
+		x-on:open-settings.window="$el.setAttribute('open', '')"
+	>
+		<summary>Settings</summary>
+		<form
+			hx-get="/boards"
+			hx-indicator="#htmx-indicator"
+			hx-validate
+			x-data="{ trello: { key: '', token: '' }}"
+			x-init="trello = { key: $store.trelloAuth.key, token: $store.trelloAuth.token }"
+			x-on:submit="canSubmit = false;
+                         $store.trelloAuth.key = trello.key;
+                         $store.trelloAuth.token = trello.token;
+                         "
+			class="mb-0"
+		>
+			<div class="mb-0">
+				@hiddenInput("trello-api-key", "Trello API key",
+                    templ.Attributes{
+                                     "required": true, "minlength": "32", "maxlength": "32",
+                                     "x-model": "trello.key",
+                                     "x-on:input": "canSubmit = true",
+                                     })
+				@hiddenInput("trello-api-token", "Trello API token",
+                    templ.Attributes{
+                                     "required": true, "minlength": "76", 
+                                     "x-model": "trello.token",
+                                     "x-on:input": "canSubmit = true",
+                                     })
+			</div>
+			<div class="flex flex-row justify-between items-end mt-3">
+				<p>
+					@component.Link("https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/") {
+						Trello - Authorizing With Trello's REST API
+					}
+				</p>
+				@component.Button(templ.Attributes{
+                    "type": "submit",
+                    "x-bind:disabled": "!canSubmit",
+                    "id": "save-auth", }, "ml-auto self-end",) {
+					Save
+				}
+			</div>
+		</form>
+		<script>
+            document.addEventListener('alpine:initializing', () => {
+                Alpine.store("trelloAuth", {
+                    key: Alpine.$persist("").as("trelloAuth-key"),
+                    token: Alpine.$persist("").as("trelloAuth-token"),
+                });
+
+                htmx.on("htmx:configRequest", evt => {
+                    evt.detail.headers["X-Trello-API-Key"] = Alpine.store("trelloAuth").key;
+                    evt.detail.headers["X-Trello-API-Token"] = Alpine.store("trelloAuth").token;
+                });
+
+                // Need to sleep so that htmx:configRequest actually adds
+                // the Trello key request headers
+                setTimeout(() => htmx.ajax("GET", "/boards"), 100);
+            })
+        </script>
+	</details>
+}
+
+templ hiddenInput(id, label string, inputAttrs templ.Attributes) {
+	<div class="flex-1 relative" x-data="{ hidden: true }">
+		<label for={ id } class="mt-1.5 font-medium text-gray-900 flex flex-row items-end gap-1">
+			{ label }
+		</label>
+		<button
+			x-on:click="hidden = ! hidden"
+			type="button"
+			class="absolute right-1 top-7 text-gray-500 hover:text-gray-600 active:text-gray-900"
+		>
+			<div x-show="hidden">
+				@svg.EyeSlash()
+			</div>
+			<div x-show="!hidden">
+				@svg.Eye()
+			</div>
+		</button>
+		<input
+			{ inputAttrs... }
+			x-bind:type="hidden ? 'password' : 'text'"
+			autocomplete="off"
+			name={ id }
+			id={ id }
+			class={ inputStyle, "w-full text-sm pr-8" }
+		/>
+	</div>
+}
