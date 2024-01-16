@@ -46,15 +46,26 @@ func handleGetBoards() http.HandlerFunc {
 
 		boards, err := client.GetBoards()
 		if err != nil {
-			shouldDisableSubmit := errors.Is(err, trello.ErrInvalidKey) || errors.Is(err, trello.ErrInvalidToken)
+			hasInvalidKey := errors.Is(err, trello.ErrInvalidKey)
+			hasInvalidToken := errors.Is(err, trello.ErrInvalidToken)
+			shouldDisableSubmit := hasInvalidKey || hasInvalidToken
+
 			if shouldDisableSubmit {
+				var errMessage string
+				switch {
+				case hasInvalidKey:
+					errMessage = "Invalid Trello API key. Make sure it is correct and try again."
+				case hasInvalidToken:
+					errMessage = "Invalid Trello API token. Make sure it is correct and try again."
+				}
+
 				_ = htmx.NewResponse().
 					StatusCode(http.StatusUnauthorized).
 					AddTrigger(htmx.Trigger("disable-submit")).
 					Reswap(htmx.SwapNone).
 					RenderTempl(r.Context(), w,
 						invoiceview.SetErrorMessage(
-							"Invalid Trello authorization credentials. Make sure they are correct and try again.",
+							errMessage,
 						))
 			} else {
 				component.RenderError(w, http.StatusInternalServerError, err)
