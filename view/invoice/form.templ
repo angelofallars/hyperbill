@@ -128,9 +128,9 @@ templ input(id, label string, inputAttrs templ.Attributes) {
 	</div>
 }
 
-templ currencyInput(name string, display string) {
+templ currencyInput(id, label string) {
 	<div class="flex flex-row items-center gap-1 flex-1">
-		<label for={ name } class="font-medium text-gray-900">{ display }</label>
+		<label for={ id } class="font-medium text-gray-900">{ label }</label>
 		<div class="relative">
 			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1">
 				<span class="text-gray-500">$</span>
@@ -138,11 +138,11 @@ templ currencyInput(name string, display string) {
 			<input
 				type="number"
 				step="0.01"
-				name={ name }
-				id={ name }
+				name={ id }
+				id={ id }
 				class={ inputStyle, " pl-4 mr-auto max-w-40" }
 				required
-				{ persistInput(name)... }
+				{ persistInput(id)... }
 			/>
 		</div>
 	</div>
