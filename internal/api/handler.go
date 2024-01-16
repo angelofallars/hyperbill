@@ -82,7 +82,10 @@ func handleGetBoards() http.HandlerFunc {
 		}
 
 		_ = htmx.NewResponse().
-			Retarget("#board-id").Reswap(htmx.SwapOuterHTML).Reselect("#board-id").
+			Retarget("#board-id").
+			Reswap(htmx.SwapOuterHTML).
+			Reselect("#board-id").
+			AddTrigger(htmx.Trigger("enable-submit")).
 			RenderTempl(r.Context(), w, invoiceview.Boards(props))
 	}
 }

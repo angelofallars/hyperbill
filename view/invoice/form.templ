@@ -19,19 +19,19 @@ templ Boards(props []BoardProps) {
 		name="board-id"
 		id="board-id"
 		class={ "overflow-ellipsis max-w-[20rem] " + inputStyle }
+		x-data="{ value: $persist('').as('invoice_board-id') }"
+		x-on:change="value = $el.value"
 		if len(props) == 0 {
 			disabled
 		} else {
-			x-init={ "canSubmit = true; document.querySelector(`option[value=\"${value}\"]`).setAttribute('selected', '')" }
+			x-init="$refs[value].setAttribute('selected', '')"
 		}
-		x-data="{ value: $persist('').as('invoice_board-id') }"
-		x-on:change="value = $el.value"
 	>
 		if len(props) == 0 {
 			<option>{ "N/A" }</option>
 		}
 		for _, board := range props {
-			<option value={ board.ID }>{ board.Name }</option>
+			<option x-ref={ board.ID } value={ board.ID }>{ board.Name }</option>
 		}
 	</select>
 }
@@ -52,6 +52,7 @@ templ MakeInvoiceForm() {
 			hx-disabled-elt="#submit-invoice"
 			x-data="{ canSubmit: false, isHTMXRequest: false }"
 			x-on:disable-submit.window="canSubmit = false"
+			x-on:enable-submit.window="canSubmit = true"
 			x-on:htmx:before-request="isHTMXRequest = true"
 			x-on:htmx:after-request="isHTMXRequest = false"
 			class="flex flex-col items-stretch h-full mb-0"
