@@ -18,7 +18,7 @@ templ Boards(props []BoardProps) {
 	<select
 		name="board-id"
 		id="board-id"
-		class={ "overflow-ellipsis max-w-[20rem] " + inputStyle }
+		class={ inputStyle, "overflow-ellipsis max-w-[20rem]" }
 		x-data="{ value: $persist('').as('invoice_board-id') }"
 		x-on:change="value = $el.value"
 		if len(props) == 0 {
@@ -189,7 +189,7 @@ templ input(id, label string, inputAttrs templ.Attributes) {
 			{ inputAttrs... }
 			name={ id }
 			id={ id }
-			class={ inputStyle + " w-full" }
+			class={ inputStyle, "w-full" }
 			{ persistForm(id)... }
 		/>
 	</div>
@@ -216,7 +216,7 @@ templ currencyInput(name string, display string) {
 				step="0.01"
 				name={ name }
 				id={ name }
-				class={ fmt.Sprintf("%s %s", inputStyle, "pl-4 mr-auto max-w-40") }
+				class={ inputStyle, " pl-4 mr-auto max-w-40" }
 				required
 				{ persistForm(name)... }
 			/>
@@ -248,7 +248,7 @@ templ hiddenInput(id, label string, inputAttrs templ.Attributes) {
 			autocomplete="off"
 			name={ id }
 			id={ id }
-			class={ inputStyle + " w-full text-sm pr-8" }
+			class={ inputStyle, "w-full text-sm pr-8" }
 		/>
 	</div>
 }
