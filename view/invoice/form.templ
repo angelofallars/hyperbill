@@ -97,9 +97,7 @@ templ Boards(props []BoardProps) {
 		name="board-id"
 		id="board-id"
 		class={ inputStyle, "overflow-ellipsis max-w-[20rem]" }
-		x-data="{ value: $persist('').as('invoice_board-id') }"
-		x-on:change="value = $el.value"
-		x-init="$refs[value]?.setAttribute('selected', '')"
+		{ persistInput("board-id")... }
 		if len(props) == 0 {
 			disabled
 		}
@@ -108,7 +106,7 @@ templ Boards(props []BoardProps) {
 			<option>{ "N/A" }</option>
 		}
 		for _, board := range props {
-			<option x-ref={ board.ID } value={ board.ID }>{ board.Name }</option>
+			<option value={ board.ID }>{ board.Name }</option>
 		}
 	</select>
 }
