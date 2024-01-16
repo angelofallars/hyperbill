@@ -289,25 +289,40 @@ func newCreateInvoiceRequest(form url.Values) (*createInvoiceRequest, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Parsing T5 rate failed: %w", err)
 	}
+	if t5Rate < 0 {
+		return nil, errors.New("T5 rate cannot be less than zero")
+	}
 
 	t4Rate, err := strconv.ParseFloat(t4RateString, 64)
 	if err != nil {
 		return nil, fmt.Errorf("Parsing T4 rate failed: %w", err)
+	}
+	if t4Rate < 0 {
+		return nil, errors.New("T4 rate cannot be less than zero")
 	}
 
 	t3Rate, err := strconv.ParseFloat(t3RateString, 64)
 	if err != nil {
 		return nil, fmt.Errorf("Parsing T3 rate failed: %w", err)
 	}
+	if t3Rate < 0 {
+		return nil, errors.New("T3 rate cannot be less than zero")
+	}
 
 	t2Rate, err := strconv.ParseFloat(t2RateString, 64)
 	if err != nil {
 		return nil, fmt.Errorf("Parsing T2 rate failed: %w", err)
 	}
+	if t2Rate < 0 {
+		return nil, errors.New("T2 rate cannot be less than zero")
+	}
 
 	t1Rate, err := strconv.ParseFloat(t1RateString, 64)
 	if err != nil {
 		return nil, fmt.Errorf("Parsing T1 rate failed: %w", err)
+	}
+	if t1Rate < 0 {
+		return nil, errors.New("T1 rate cannot be less than zero")
 	}
 
 	return &createInvoiceRequest{
