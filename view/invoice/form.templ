@@ -153,15 +153,13 @@ templ currencyInput(id, label string) {
 					<span class="text-gray-500">$</span>
 				</div>
 				<input
-					type="number"
-					step="0.01"
-					min="0"
 					name={ id }
 					id={ id }
 					class={ inputStyle, "pl-4 mr-auto max-w-40" }
 					required
 					x-on:input="validationMessage = $el.validationMessage"
 					x-on:change="validationMessage = $el.validationMessage"
+					x-mask:dynamic="$money($input)"
 					{ persistInput(id)... }
 				/>
 			</div>
