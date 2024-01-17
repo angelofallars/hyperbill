@@ -38,6 +38,20 @@ func handleIndex() http.HandlerFunc {
 	}
 }
 
+func showError(w http.ResponseWriter, code int, err error) {
+	_ = htmx.NewResponse().
+		StatusCode(code).
+		AddTrigger(setErrorMessage(err.Error())).
+		Reswap(htmx.SwapNone).
+		Write(w)
+}
+
+func clearError(w http.ResponseWriter) {
+	_ = htmx.NewResponse().
+		AddTrigger(setErrorMessage("")).
+		Write(w)
+}
+
 func handleGetBoards() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		trelloAPIKey := r.Header.Get(header.TrelloAuthKey)
@@ -79,12 +93,13 @@ func handleGetBoards() http.HandlerFunc {
 			})
 		}
 
+		clearError(w)
+
 		_ = htmx.NewResponse().
 			Retarget("#board-id").
 			Reswap(htmx.SwapOuterHTML).
 			Reselect("#board-id").
 			AddTrigger(htmx.Trigger("enable-submit")).
-			AddTrigger(setErrorMessage("")).
 			RenderTempl(r.Context(), w, invoiceview.Boards(props))
 	}
 }
@@ -104,13 +119,13 @@ func handleCreateInvoice() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			component.RenderError(w, http.StatusBadRequest, err)
+			showError(w, http.StatusBadRequest, err)
 			return
 		}
 
 		req, err := newCreateInvoiceRequest(r.Form)
 		if err != nil {
-			component.RenderError(w, http.StatusBadRequest, err)
+			showError(w, http.StatusBadRequest, err)
 			return
 		}
 
@@ -120,7 +135,7 @@ func handleCreateInvoice() http.HandlerFunc {
 
 		cards, err := client.GetCards(req.trelloBoardID)
 		if err != nil {
-			component.RenderError(w, http.StatusInternalServerError, err)
+			showError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -129,7 +144,7 @@ func handleCreateInvoice() http.HandlerFunc {
 		for _, card := range cards {
 			actions, err := client.GetCardActions(card.ID)
 			if err != nil {
-				component.RenderError(w, http.StatusInternalServerError, err)
+				showError(w, http.StatusInternalServerError, err)
 				return
 			}
 
@@ -154,7 +169,7 @@ func handleCreateInvoice() http.HandlerFunc {
 			for _, action := range actions {
 				actionDate, err = time.Parse(time.RFC3339Nano, action.Date)
 				if err != nil {
-					component.RenderError(w, http.StatusInternalServerError, err)
+					showError(w, http.StatusInternalServerError, err)
 					return
 				}
 
@@ -255,6 +270,8 @@ func handleCreateInvoice() http.HandlerFunc {
 		inv.T1Report.Price = inv.T1Report.TimeSpent.Hours() * inv.T1Report.PricePerHour
 
 		inv.TotalPrice = inv.T5Report.Price + inv.T4Report.Price + inv.T3Report.Price + inv.T2Report.Price + inv.T1Report.Price
+
+		clearError(w)
 
 		_ = invoiceview.Invoice(inv).Render(context.Background(), w)
 	}
