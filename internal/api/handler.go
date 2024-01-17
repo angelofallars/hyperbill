@@ -14,12 +14,12 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
+	"github.com/angelofallars/htmx-go"
 	"github.com/angelofallars/hyperbill/internal/header"
 	"github.com/angelofallars/hyperbill/internal/invoice"
 	"github.com/angelofallars/hyperbill/pkg/trello"
 	"github.com/angelofallars/hyperbill/view/component"
 	invoiceview "github.com/angelofallars/hyperbill/view/invoice"
-	"github.com/angelofallars/htmx-go"
 )
 
 func (a *API) RegisterRoutes() {
@@ -62,11 +62,9 @@ func handleGetBoards() http.HandlerFunc {
 				_ = htmx.NewResponse().
 					StatusCode(http.StatusUnauthorized).
 					AddTrigger(htmx.Trigger("disable-submit")).
+					AddTrigger(setErrorMessage(errMessage)).
 					Reswap(htmx.SwapNone).
-					RenderTempl(r.Context(), w,
-						invoiceview.SetErrorMessage(
-							errMessage,
-						))
+					Write(w)
 			} else {
 				component.RenderError(w, http.StatusInternalServerError, err)
 			}
@@ -86,10 +84,8 @@ func handleGetBoards() http.HandlerFunc {
 			Reswap(htmx.SwapOuterHTML).
 			Reselect("#board-id").
 			AddTrigger(htmx.Trigger("enable-submit")).
+			AddTrigger(setErrorMessage("")).
 			RenderTempl(r.Context(), w, invoiceview.Boards(props))
-
-		_ = invoiceview.SetErrorMessage("").
-			Render(r.Context(), w)
 	}
 }
 

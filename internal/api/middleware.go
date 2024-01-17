@@ -3,9 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/angelofallars/hyperbill/internal/header"
-	invoiceview "github.com/angelofallars/hyperbill/view/invoice"
 	"github.com/angelofallars/htmx-go"
+	"github.com/angelofallars/hyperbill/internal/header"
 )
 
 func authRequired(f http.HandlerFunc) http.HandlerFunc {
@@ -19,10 +18,10 @@ func authRequired(f http.HandlerFunc) http.HandlerFunc {
 				Reswap(htmx.SwapNone).
 				AddTrigger(htmx.Trigger("disable-submit")).
 				AddTrigger(htmx.Trigger("open-settings")).
-				RenderTempl(r.Context(), w,
-					invoiceview.SetErrorMessage(
-						"To use this application, the Trello API key and token need to be supplied in the settings.",
-					))
+				AddTrigger(
+					setErrorMessage("To use this application, the Trello API key and token need to be supplied in the settings."),
+				).
+				Write(w)
 			return
 		}
 
