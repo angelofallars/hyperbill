@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/angelofallars/hyperbill/pkg/trello"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -16,19 +15,15 @@ type App struct {
 
 	slog   *slog.Logger
 	router chi.Router
-
-	trelloClient *trello.Client
 }
 
-func New(slog *slog.Logger, trelloClient *trello.Client) *App {
+func New(slog *slog.Logger) *App {
 	app := &App{
 		host: "localhost",
 		port: 3000,
 
 		router: chi.NewRouter(),
 		slog:   slog,
-
-		trelloClient: trelloClient,
 	}
 
 	app.RegisterRoutes()
