@@ -52,6 +52,7 @@ func handleGetBoards(svc service.Invoice) http.HandlerFunc {
 		boards, err := svc.GetBoards(r.Context(), client)
 		if err != nil {
 			showError(w, http.StatusInternalServerError, err)
+			return
 		}
 
 		_ = htmx.NewResponse().
@@ -93,6 +94,7 @@ func handleCreateInvoice(svc service.Invoice) http.HandlerFunc {
 		})
 		if err != nil {
 			showError(w, http.StatusInternalServerError, err)
+			return
 		}
 
 		clearError(w)
