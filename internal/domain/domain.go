@@ -28,3 +28,8 @@ const (
 	CategoryT4 Category = "T4"
 	CategoryT5 Category = "T5"
 )
+
+type Board struct {
+	ID   string
+	Name string
+}

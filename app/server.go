@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/angelofallars/hyperbill/internal/service"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -15,15 +16,19 @@ type App struct {
 
 	slog   *slog.Logger
 	router chi.Router
+
+	svcInvoice service.Invoice
 }
 
-func New(slog *slog.Logger) *App {
+func New(slog *slog.Logger, svcInvoice service.Invoice) *App {
 	app := &App{
 		host: "localhost",
 		port: 3000,
 
 		router: chi.NewRouter(),
 		slog:   slog,
+
+		svcInvoice: svcInvoice,
 	}
 
 	app.RegisterRoutes()

@@ -5,10 +5,13 @@ import (
 	"log/slog"
 
 	"github.com/angelofallars/hyperbill/app"
+	"github.com/angelofallars/hyperbill/internal/service"
 )
 
 func main() {
-	app := app.New(slog.Default()).WithPort(3000)
+	svcInvoice := service.NewInvoice()
+
+	app := app.New(slog.Default(), svcInvoice).WithPort(3000)
 
 	// Run the server
 	err := app.Serve()
