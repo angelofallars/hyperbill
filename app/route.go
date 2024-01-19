@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func (a *API) RegisterRoutes() {
+func (a *App) RegisterRoutes() {
 	a.router.Use(middleware.Logger)
 
 	invoice.NewHandlerGroup().Mount(a.router)

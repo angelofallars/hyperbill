@@ -30,10 +30,10 @@ func main() {
 
 	trelloClient := trello.New(trelloAPIKey, trelloToken)
 
-	api := app.New(slog.Default(), trelloClient).WithPort(3000)
+	app := app.New(slog.Default(), trelloClient).WithPort(3000)
 
 	// Run the server
-	err = api.Serve()
+	err = app.Serve()
 	if err != nil {
 		fmt.Println(err)
 	}

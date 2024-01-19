@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type API struct {
+type App struct {
 	host string
 	port int
 
@@ -20,8 +20,8 @@ type API struct {
 	trelloClient *trello.Client
 }
 
-func New(slog *slog.Logger, trelloClient *trello.Client) *API {
-	api := &API{
+func New(slog *slog.Logger, trelloClient *trello.Client) *App {
+	app := &App{
 		host: "localhost",
 		port: 3000,
 
@@ -31,22 +31,22 @@ func New(slog *slog.Logger, trelloClient *trello.Client) *API {
 		trelloClient: trelloClient,
 	}
 
-	api.RegisterRoutes()
+	app.RegisterRoutes()
 
-	return api
+	return app
 }
 
-func (a *API) WithHost(host string) *API {
+func (a *App) WithHost(host string) *App {
 	a.host = host
 	return a
 }
 
-func (a *API) WithPort(port uint) *API {
+func (a *App) WithPort(port uint) *App {
 	a.port = int(port)
 	return a
 }
 
-func (a *API) Serve() error {
+func (a *App) Serve() error {
 	addr := fmt.Sprintf("%s:%d", a.host, a.port)
 	server := http.Server{
 		Addr:    addr,
