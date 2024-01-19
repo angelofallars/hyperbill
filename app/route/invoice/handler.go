@@ -62,8 +62,10 @@ func handleGetBoards(w http.ResponseWriter, r *http.Request) {
 
 			_ = resp.
 				StatusCode(http.StatusUnauthorized).
-				AddTrigger(event.TriggerDisableSubmit).
-				AddTrigger(event.TriggerSetErrMessage(errMessage)).
+				AddTrigger(
+					event.TriggerDisableSubmit,
+					event.TriggerSetErrMessage(errMessage),
+				).
 				Write(w)
 			return
 		}
@@ -87,8 +89,10 @@ func handleGetBoards(w http.ResponseWriter, r *http.Request) {
 		Retarget("#board-id").
 		Reswap(htmx.SwapOuterHTML).
 		Reselect("#board-id").
-		AddTrigger(event.TriggerEnableSubmit).
-		AddTrigger(event.TriggerSetErrMessage("")).
+		AddTrigger(
+			event.TriggerEnableSubmit,
+			event.TriggerSetErrMessage(""),
+		).
 		RenderTempl(r.Context(), w, Boards(props))
 }
 
