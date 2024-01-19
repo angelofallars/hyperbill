@@ -304,7 +304,7 @@ func newCreateInvoiceRequest(form url.Values) (*createInvoiceRequest, error) {
 
 	startDate, err := time.Parse(time.DateOnly, startDateString)
 	if err != nil {
-		return nil, fmt.Errorf("Parsing end date failed: %w", err)
+		return nil, fmt.Errorf("Parsing start date failed: %w", err)
 	}
 
 	endDate, err := time.Parse(time.DateOnly, endDateString)
