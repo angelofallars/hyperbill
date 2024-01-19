@@ -25,7 +25,7 @@ import (
 func (a *API) RegisterRoutes() {
 	a.router.Use(middleware.Logger)
 
-	a.router.Get("/", handleIndex())
+	a.router.Handle("/", templ.Handler(invoiceview.Index()))
 	a.router.Get("/boards", authRequired(handleGetBoards()))
 	a.router.Post("/invoice", authRequired(handleCreateInvoice()))
 
