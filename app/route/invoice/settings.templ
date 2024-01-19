@@ -69,21 +69,21 @@ templ settings() {
 }
 
 script setupAuth(headerAuthKey, headerAuthToken string) {
-    document.addEventListener('alpine:initializing', () => {
-        Alpine.store("trelloAuth", {
-            key: Alpine.$persist("").as("trelloAuth-key"),
-            token: Alpine.$persist("").as("trelloAuth-token"),
-        });
+	document.addEventListener('alpine:initializing', () => {
+		Alpine.store("trelloAuth", {
+				key: Alpine.$persist("").as("trelloAuth-key"),
+				token: Alpine.$persist("").as("trelloAuth-token"),
+		});
 
-        htmx.on("htmx:configRequest", evt => {
-            evt.detail.headers[headerAuthKey] = Alpine.store("trelloAuth").key;
-            evt.detail.headers[headerAuthToken] = Alpine.store("trelloAuth").token;
-        });
+		htmx.on("htmx:configRequest", evt => {
+				evt.detail.headers[headerAuthKey] = Alpine.store("trelloAuth").key;
+				evt.detail.headers[headerAuthToken] = Alpine.store("trelloAuth").token;
+		});
 
-        // Need to sleep so that htmx:configRequest actually adds
-        // the Trello key request headers
-        setTimeout(() => htmx.ajax("GET", "/boards"), 100);
-    })
+		// Need to sleep so that htmx:configRequest actually adds
+		// the Trello key request headers
+		setTimeout(() => htmx.ajax("GET", "/boards"), 100);
+	})
 }
 
 templ hiddenInput(id, label string, inputAttrs templ.Attributes) {
