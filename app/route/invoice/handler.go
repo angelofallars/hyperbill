@@ -104,20 +104,6 @@ type inProgressSession struct {
 	duration  time.Duration
 }
 
-func showError(w http.ResponseWriter, code int, err error) {
-	_ = htmx.NewResponse().
-		StatusCode(code).
-		Reswap(htmx.SwapNone).
-		AddTrigger(event.TriggerSetErrMessage(err.Error())).
-		Write(w)
-}
-
-func clearError(w http.ResponseWriter) {
-	_ = htmx.NewResponse().
-		AddTrigger(event.TriggerSetErrMessage("")).
-		Write(w)
-}
-
 func handleCreateInvoice() http.HandlerFunc {
 	// TODO: Heavily refactor this handler by extracting parts into services
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -373,4 +359,18 @@ func newCreateInvoiceRequest(form url.Values) (*createInvoiceRequest, error) {
 		t2Rate:        t2Rate,
 		t1Rate:        t1Rate,
 	}, nil
+}
+
+func showError(w http.ResponseWriter, code int, err error) {
+	_ = htmx.NewResponse().
+		StatusCode(code).
+		Reswap(htmx.SwapNone).
+		AddTrigger(event.TriggerSetErrMessage(err.Error())).
+		Write(w)
+}
+
+func clearError(w http.ResponseWriter) {
+	_ = htmx.NewResponse().
+		AddTrigger(event.TriggerSetErrMessage("")).
+		Write(w)
 }
