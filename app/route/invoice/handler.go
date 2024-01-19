@@ -137,8 +137,18 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 	_ = Invoice(invoice).Render(context.Background(), w)
 }
 
-func createInvoice(client *trello.Client, req *createInvoiceRequest) (*domain.Invoice, error) {
-	cards, err := client.GetCards(req.trelloBoardID)
+func createInvoice(client *trello.Client, req *CreateInvoiceRequest) (*domain.Invoice, error) {
+	type inProgressSession struct {
+		startDate time.Time
+		duration  time.Duration
+	}
+
+	type cardHistory struct {
+		Category           domain.Category
+		InProgressSessions []inProgressSession
+	}
+
+	cards, err := client.GetCards(req.TrelloBoardID)
 	if err != nil {
 		return nil, err
 	}
