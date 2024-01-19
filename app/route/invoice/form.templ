@@ -3,8 +3,9 @@ package invoice
 import (
 	"fmt"
 
-	"github.com/angelofallars/hyperbill/view/component"
-	"github.com/angelofallars/hyperbill/view/svg"
+	"github.com/angelofallars/hyperbill/app/component"
+	"github.com/angelofallars/hyperbill/app/svg"
+	"github.com/angelofallars/hyperbill/app/event"
 )
 
 const inputStyle = "border px-2 h-7 bg-transparent disabled:text-gray-500 border-slate-400 border-1.5 rounded focus:border-transparent focus:ring-green-700 invalid:border-red-500 invalid:focus:ring-red-700 focus:outline-none focus:ring-2 selection:bg-green-500"
@@ -75,7 +76,7 @@ templ MakeInvoiceForm() {
 					class="text-right text-sm text-red-700 max-w-[20rem]"
 					x-data="{ message: '' }"
 					x-text="message"
-					x-on:set-error-message.window="message = $event.detail.value"
+					{ event.SetErrMessage.Listen("message = $event.detail.value")... }
 				></p>
 				@component.Button(templ.Attributes{
                         "type": "submit",

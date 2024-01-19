@@ -1,0 +1,58 @@
+package component
+
+templ FullPage(title string, content templ.Component) {
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>{ title }</title>
+		@imports()
+		@changeTitle()
+		@acceptErrorMessages()
+	</head>
+	<body hx-boost="true" class="bg-sky-900">
+		<main class="w-11/12 max-w-[160rem] mx-auto mt-9 flex flex-col items-center">
+			@content
+			<footer class="text-white text-sm mt-1 mb-2">
+				© 2024 SofSafe • Made with ❤ using 
+				@LightLink("https://htmx.org/") {
+					HTMX
+				}
+				{ ", " }
+				@LightLink("https://alpinejs.dev/") {
+					Alpine.js
+				}
+				{ " and " }
+				@LightLink("https://tailwindcss.com/") {
+					Tailwind CSS
+				}
+			</footer>
+		</main>
+	</body>
+}
+
+templ imports() {
+	<script src="https://unpkg.com/htmx.org@1.9.8" integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr" crossorigin="anonymous"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/mask@3.x.x/dist/cdn.min.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+	<link rel="stylesheet" href="/static/styles.out.css"/>
+	<link rel="preconnect" href="https://fonts.googleapis.com"/>
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet"/>
+}
+
+script changeTitle() {
+	htmx.on("changeTitle", function(evt) {
+		me("title").innerText = evt.detail.value;
+	});
+}
+
+script acceptErrorMessages() {
+	htmx.on('htmx:beforeSwap', function(evt) {
+		if (evt.detail.xhr.status >= 400){
+			evt.detail.shouldSwap = true;
+			evt.detail.isError = false;
+		}        
+	});
+}

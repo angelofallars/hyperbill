@@ -1,8 +1,8 @@
 package invoice
 
 import "fmt"
-import "github.com/angelofallars/hyperbill/view/component"
-import "github.com/angelofallars/hyperbill/internal/invoice"
+import "github.com/angelofallars/hyperbill/app/component"
+import "github.com/angelofallars/hyperbill/internal/domain"
 
 templ InvoiceCard() {
 	@component.Card("max-w-[30rem]") {
@@ -13,7 +13,7 @@ templ InvoiceCard() {
 	}
 }
 
-templ Invoice(data invoice.Invoice) {
+templ Invoice(data domain.Invoice) {
 	<div class="flex flex-col justify-between h-full">
 		<p>
 			Billing Period: { data.StartDate.Format("01/02/2006") }-{ data.EndDate.Format("01/02/2006") }
@@ -48,7 +48,7 @@ templ Invoice(data invoice.Invoice) {
 	</div>
 }
 
-templ categoryReport(categoryName string, report invoice.CategoryReport) {
+templ categoryReport(categoryName string, report domain.CategoryReport) {
 	<tr class="mt-4 h-8 border-t border-t-gray-300">
 		<td class="font-medium">{ categoryName }</td>
 		<td>${ fmt.Sprint(report.PricePerHour) }</td>

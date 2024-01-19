@@ -7,7 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/angelofallars/hyperbill/internal/api"
+	"github.com/angelofallars/hyperbill/app"
 	"github.com/angelofallars/hyperbill/pkg/trello"
 )
 
@@ -30,7 +30,7 @@ func main() {
 
 	trelloClient := trello.New(trelloAPIKey, trelloToken)
 
-	api := api.New(slog.Default(), trelloClient).WithPort(3000)
+	api := app.New(slog.Default(), trelloClient).WithPort(3000)
 
 	// Run the server
 	err = api.Serve()

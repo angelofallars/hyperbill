@@ -1,4 +1,4 @@
-package api
+package invoice
 
 import (
 	"context"
@@ -13,51 +13,44 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	"github.com/go-chi/chi/v5/middleware"
-
 	"github.com/angelofallars/htmx-go"
-	"github.com/angelofallars/hyperbill/internal/header"
-	"github.com/angelofallars/hyperbill/internal/invoice"
+	"github.com/angelofallars/hyperbill/app/auth"
+	"github.com/angelofallars/hyperbill/app/component"
+	"github.com/angelofallars/hyperbill/app/event"
+	"github.com/angelofallars/hyperbill/internal/domain"
 	"github.com/angelofallars/hyperbill/pkg/trello"
-	"github.com/angelofallars/hyperbill/view/component"
-	invoiceview "github.com/angelofallars/hyperbill/view/invoice"
+	"github.com/go-chi/chi/v5"
 )
 
-func (a *API) RegisterRoutes() {
-	a.router.Use(middleware.Logger)
+type HandlerGroup struct{}
 
-	a.router.Handle("/", templ.Handler(invoiceview.Index()))
-	a.router.Get("/boards", authRequired(handleGetBoards()))
-	a.router.Post("/invoice", authRequired(handleCreateInvoice()))
-
-	a.router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("view/assets/"))))
+func NewHandlerGroup() *HandlerGroup {
+	return &HandlerGroup{}
 }
 
-func showError(w http.ResponseWriter, code int, err error) {
-	_ = htmx.NewResponse().
-		StatusCode(code).
-		AddTrigger(setErrorMessage(err.Error())).
-		Reswap(htmx.SwapNone).
-		Write(w)
-}
-
-func clearError(w http.ResponseWriter) {
-	_ = htmx.NewResponse().
-		AddTrigger(setErrorMessage("")).
-		Write(w)
+func (hg *HandlerGroup) Mount(r chi.Router) {
+	r.Handle("/", templ.Handler(component.FullPage("Trello Invoice Builder", page())))
+	r.Get("/boards", auth.RequireTrelloCredentials(handleGetBoards()))
+	r.Post("/invoice", auth.RequireTrelloCredentials(handleCreateInvoice()))
 }
 
 func handleGetBoards() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		trelloAPIKey := r.Header.Get(header.TrelloAuthKey)
-		trelloAPIToken := r.Header.Get(header.TrelloAuthToken)
-		client := trello.New(trelloAPIKey, trelloAPIToken)
+		credentials, err := auth.GetTrelloCredentials(r.Context())
+		if err != nil {
+			showError(w, http.StatusUnauthorized, err)
+			return
+		}
+
+		client := trello.New(credentials.Key, credentials.Token)
 
 		boards, err := client.GetBoards()
 		if err != nil {
 			hasInvalidKey := errors.Is(err, trello.ErrInvalidKey)
 			hasInvalidToken := errors.Is(err, trello.ErrInvalidToken)
 			shouldDisableSubmit := hasInvalidKey || hasInvalidToken
+
+			resp := htmx.NewResponse().Reswap(htmx.SwapNone)
 
 			if shouldDisableSubmit {
 				var errMessage string
@@ -68,45 +61,61 @@ func handleGetBoards() http.HandlerFunc {
 					errMessage = "Invalid Trello API token. Make sure it is correct and try again."
 				}
 
-				_ = htmx.NewResponse().
+				_ = resp.
 					StatusCode(http.StatusUnauthorized).
-					AddTrigger(htmx.Trigger("disable-submit")).
-					AddTrigger(setErrorMessage(errMessage)).
-					Reswap(htmx.SwapNone).
+					AddTrigger(event.TriggerDisableSubmit).
+					AddTrigger(event.TriggerSetErrMessage(errMessage)).
 					Write(w)
-			} else {
-				component.RenderError(w, http.StatusInternalServerError, err)
+				return
 			}
+
+			_ = resp.
+				StatusCode(http.StatusInternalServerError).
+				AddTrigger(event.TriggerSetErrMessage(err.Error())).
+				Write(w)
 			return
 		}
 
-		props := make([]invoiceview.BoardProps, 0, len(boards))
+		props := make([]BoardProps, 0, len(boards))
 		for _, board := range boards {
-			props = append(props, invoiceview.BoardProps{
+			props = append(props, BoardProps{
 				Name: board.Name,
 				ID:   board.ID,
 			})
 		}
-
-		clearError(w)
 
 		_ = htmx.NewResponse().
 			Retarget("#board-id").
 			Reswap(htmx.SwapOuterHTML).
 			Reselect("#board-id").
 			AddTrigger(htmx.Trigger("enable-submit")).
-			RenderTempl(r.Context(), w, invoiceview.Boards(props))
+			AddTrigger(event.TriggerSetErrMessage("")).
+			RenderTempl(r.Context(), w, Boards(props))
 	}
 }
 
 type cardHistory struct {
-	Category           invoice.Category
+	Category           domain.Category
 	InProgressSessions []inProgressSession
 }
 
 type inProgressSession struct {
 	startDate time.Time
 	duration  time.Duration
+}
+
+func showError(w http.ResponseWriter, code int, err error) {
+	_ = htmx.NewResponse().
+		StatusCode(code).
+		Reswap(htmx.SwapNone).
+		AddTrigger(event.TriggerSetErrMessage(err.Error())).
+		Write(w)
+}
+
+func clearError(w http.ResponseWriter) {
+	_ = htmx.NewResponse().
+		AddTrigger(event.TriggerSetErrMessage("")).
+		Write(w)
 }
 
 func handleCreateInvoice() http.HandlerFunc {
@@ -124,9 +133,12 @@ func handleCreateInvoice() http.HandlerFunc {
 			return
 		}
 
-		trelloAPIKey := r.Header.Get(header.TrelloAuthKey)
-		trelloAPIToken := r.Header.Get(header.TrelloAuthToken)
-		client := trello.New(trelloAPIKey, trelloAPIToken)
+		credentials, err := auth.GetTrelloCredentials(r.Context())
+		if err != nil {
+			showError(w, http.StatusUnauthorized, err)
+			return
+		}
+		client := trello.New(credentials.Key, credentials.Token)
 
 		cards, err := client.GetCards(req.trelloBoardID)
 		if err != nil {
@@ -197,20 +209,20 @@ func handleCreateInvoice() http.HandlerFunc {
 				})
 			}
 
-			var category invoice.Category
+			var category domain.Category
 			switch {
 			case slices.Contains(card.Labels, "T5"):
-				category = invoice.CategoryT5
+				category = domain.CategoryT5
 			case slices.Contains(card.Labels, "T4"):
-				category = invoice.CategoryT4
+				category = domain.CategoryT4
 			case slices.Contains(card.Labels, "T3"):
-				category = invoice.CategoryT3
+				category = domain.CategoryT3
 			case slices.Contains(card.Labels, "T2"):
-				category = invoice.CategoryT2
+				category = domain.CategoryT2
 			case slices.Contains(card.Labels, "T1"):
-				category = invoice.CategoryT1
+				category = domain.CategoryT1
 			default:
-				category = invoice.CategoryT1
+				category = domain.CategoryT1
 			}
 
 			cardHistories = append(cardHistories, cardHistory{
@@ -219,22 +231,22 @@ func handleCreateInvoice() http.HandlerFunc {
 			})
 		}
 
-		inv := invoice.Invoice{
+		inv := domain.Invoice{
 			StartDate: req.startDate,
 			EndDate:   req.endDate,
-			T5Report: invoice.CategoryReport{
+			T5Report: domain.CategoryReport{
 				PricePerHour: req.t5Rate,
 			},
-			T4Report: invoice.CategoryReport{
+			T4Report: domain.CategoryReport{
 				PricePerHour: req.t4Rate,
 			},
-			T3Report: invoice.CategoryReport{
+			T3Report: domain.CategoryReport{
 				PricePerHour: req.t3Rate,
 			},
-			T2Report: invoice.CategoryReport{
+			T2Report: domain.CategoryReport{
 				PricePerHour: req.t2Rate,
 			},
-			T1Report: invoice.CategoryReport{
+			T1Report: domain.CategoryReport{
 				PricePerHour: req.t1Rate,
 			},
 		}
@@ -245,15 +257,15 @@ func handleCreateInvoice() http.HandlerFunc {
 				timeSpent += session.duration
 			}
 			switch cardHistory.Category {
-			case invoice.CategoryT5:
+			case domain.CategoryT5:
 				inv.T5Report.TimeSpent += timeSpent
-			case invoice.CategoryT4:
+			case domain.CategoryT4:
 				inv.T4Report.TimeSpent += timeSpent
-			case invoice.CategoryT3:
+			case domain.CategoryT3:
 				inv.T3Report.TimeSpent += timeSpent
-			case invoice.CategoryT2:
+			case domain.CategoryT2:
 				inv.T2Report.TimeSpent += timeSpent
-			case invoice.CategoryT1:
+			case domain.CategoryT1:
 				inv.T1Report.TimeSpent += timeSpent
 			}
 		}
@@ -268,7 +280,7 @@ func handleCreateInvoice() http.HandlerFunc {
 
 		clearError(w)
 
-		_ = invoiceview.Invoice(inv).Render(context.Background(), w)
+		_ = Invoice(inv).Render(context.Background(), w)
 	}
 }
 
