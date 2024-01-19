@@ -17,8 +17,8 @@ func RequireTrelloCredentials(f http.HandlerFunc) http.HandlerFunc {
 
 		if trelloAPIKey == "" || trelloAPIToken == "" {
 			_ = htmx.NewResponse().
-				Reswap(htmx.SwapNone).
 				StatusCode(http.StatusUnauthorized).
+				Reswap(htmx.SwapNone).
 				AddTrigger(
 					event.TriggerDisableSubmit,
 					event.TriggerOpenSettings,
