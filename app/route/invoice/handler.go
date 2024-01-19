@@ -5,10 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +18,7 @@ import (
 	"github.com/angelofallars/hyperbill/internal/domain"
 	"github.com/angelofallars/hyperbill/pkg/trello"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 )
 
 type HandlerGroup struct{}
@@ -96,26 +95,9 @@ func handleGetBoards(w http.ResponseWriter, r *http.Request) {
 		RenderTempl(r.Context(), w, Boards(props))
 }
 
-type cardHistory struct {
-	Category           domain.Category
-	InProgressSessions []inProgressSession
-}
-
-type inProgressSession struct {
-	startDate time.Time
-	duration  time.Duration
-}
-
 func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
-	// TODO: Heavily refactor this handler by extracting parts into services
-	err := r.ParseForm()
-	if err != nil {
-		showError(w, http.StatusBadRequest, err)
-		return
-	}
-
-	req, err := newCreateInvoiceRequest(r.Form)
-	if err != nil {
+	req := &CreateInvoiceRequest{}
+	if err := render.Bind(r, req); err != nil {
 		showError(w, http.StatusBadRequest, err)
 		return
 	}
@@ -135,6 +117,47 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 	clearError(w)
 
 	_ = Invoice(invoice).Render(context.Background(), w)
+}
+
+type CreateInvoiceRequest struct {
+	TrelloBoardID string    `form:"board-id"`
+	StartDate     time.Time `form:"start-date"`
+	EndDate       time.Time `form:"end-date"`
+	T5Rate        float64   `form:"t5"`
+	T4Rate        float64   `form:"t4"`
+	T3Rate        float64   `form:"t3"`
+	T2Rate        float64   `form:"t2"`
+	T1Rate        float64   `form:"t1"`
+}
+
+// createInvoiceRequest satisfies [render.Binder]
+func (cir *CreateInvoiceRequest) Bind(r *http.Request) error {
+	if matched, _ := regexp.MatchString("^[0-9a-fA-F]{24}$", cir.TrelloBoardID); !matched {
+		return fmt.Errorf("Invalid trello board ID: %s", cir.TrelloBoardID)
+	}
+
+	if cir.StartDate.UnixMicro() >= cir.EndDate.UnixMicro() {
+		return errors.New("Start date must be earlier than end date.")
+	}
+
+	if cir.T5Rate < 0 {
+		return errors.New("T5 rate cannot be less than zero")
+	}
+
+	if cir.T4Rate < 0 {
+		return errors.New("T4 rate cannot be less than zero")
+	}
+	if cir.T3Rate < 0 {
+		return errors.New("T3 rate cannot be less than zero")
+	}
+	if cir.T2Rate < 0 {
+		return errors.New("T2 rate cannot be less than zero")
+	}
+	if cir.T1Rate < 0 {
+		return errors.New("T1 rate cannot be less than zero")
+	}
+
+	return nil
 }
 
 func createInvoice(client *trello.Client, req *CreateInvoiceRequest) (*domain.Invoice, error) {
@@ -186,7 +209,7 @@ func createInvoice(client *trello.Client, req *CreateInvoiceRequest) (*domain.In
 			}
 
 			unixDate := actionDate.UnixNano()
-			if unixDate < req.startDate.UnixNano() || unixDate > req.endDate.UnixNano() {
+			if unixDate < req.StartDate.UnixNano() || unixDate > req.EndDate.UnixNano() {
 				continue
 			}
 
@@ -237,22 +260,22 @@ func createInvoice(client *trello.Client, req *CreateInvoiceRequest) (*domain.In
 	}
 
 	inv := &domain.Invoice{
-		StartDate: req.startDate,
-		EndDate:   req.endDate,
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
 		T5Report: domain.CategoryReport{
-			PricePerHour: req.t5Rate,
+			PricePerHour: req.T5Rate,
 		},
 		T4Report: domain.CategoryReport{
-			PricePerHour: req.t4Rate,
+			PricePerHour: req.T4Rate,
 		},
 		T3Report: domain.CategoryReport{
-			PricePerHour: req.t3Rate,
+			PricePerHour: req.T3Rate,
 		},
 		T2Report: domain.CategoryReport{
-			PricePerHour: req.t2Rate,
+			PricePerHour: req.T2Rate,
 		},
 		T1Report: domain.CategoryReport{
-			PricePerHour: req.t1Rate,
+			PricePerHour: req.T1Rate,
 		},
 	}
 
@@ -284,97 +307,6 @@ func createInvoice(client *trello.Client, req *CreateInvoiceRequest) (*domain.In
 	inv.TotalPrice = inv.T5Report.Price + inv.T4Report.Price + inv.T3Report.Price + inv.T2Report.Price + inv.T1Report.Price
 
 	return inv, nil
-}
-
-type createInvoiceRequest struct {
-	trelloBoardID string
-	startDate     time.Time
-	endDate       time.Time
-	t5Rate        float64
-	t4Rate        float64
-	t3Rate        float64
-	t2Rate        float64
-	t1Rate        float64
-}
-
-func newCreateInvoiceRequest(form url.Values) (*createInvoiceRequest, error) {
-	trelloBoardID := form.Get("board-id")
-	startDateString := form.Get("start-date")
-	endDateString := form.Get("end-date")
-	t5RateString := form.Get("t5")
-	t4RateString := form.Get("t4")
-	t3RateString := form.Get("t3")
-	t2RateString := form.Get("t2")
-	t1RateString := form.Get("t1")
-
-	if matched, _ := regexp.MatchString("^[0-9a-fA-F]{24}$", trelloBoardID); !matched {
-		return nil, fmt.Errorf("Invalid trello board ID: %s", trelloBoardID)
-	}
-
-	startDate, err := time.Parse(time.DateOnly, startDateString)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing start date failed: %w", err)
-	}
-
-	endDate, err := time.Parse(time.DateOnly, endDateString)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing end date failed: %w", err)
-	}
-
-	if startDate.UnixMicro() >= endDate.UnixMicro() {
-		return nil, errors.New("Start date must be earlier than end date.")
-	}
-
-	t5Rate, err := strconv.ParseFloat(t5RateString, 64)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing T5 rate failed: %w", err)
-	}
-	if t5Rate < 0 {
-		return nil, errors.New("T5 rate cannot be less than zero")
-	}
-
-	t4Rate, err := strconv.ParseFloat(t4RateString, 64)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing T4 rate failed: %w", err)
-	}
-	if t4Rate < 0 {
-		return nil, errors.New("T4 rate cannot be less than zero")
-	}
-
-	t3Rate, err := strconv.ParseFloat(t3RateString, 64)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing T3 rate failed: %w", err)
-	}
-	if t3Rate < 0 {
-		return nil, errors.New("T3 rate cannot be less than zero")
-	}
-
-	t2Rate, err := strconv.ParseFloat(t2RateString, 64)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing T2 rate failed: %w", err)
-	}
-	if t2Rate < 0 {
-		return nil, errors.New("T2 rate cannot be less than zero")
-	}
-
-	t1Rate, err := strconv.ParseFloat(t1RateString, 64)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing T1 rate failed: %w", err)
-	}
-	if t1Rate < 0 {
-		return nil, errors.New("T1 rate cannot be less than zero")
-	}
-
-	return &createInvoiceRequest{
-		trelloBoardID: trelloBoardID,
-		startDate:     startDate,
-		endDate:       endDate,
-		t5Rate:        t5Rate,
-		t4Rate:        t4Rate,
-		t3Rate:        t3Rate,
-		t2Rate:        t2Rate,
-		t1Rate:        t1Rate,
-	}, nil
 }
 
 func showError(w http.ResponseWriter, code int, err error) {
