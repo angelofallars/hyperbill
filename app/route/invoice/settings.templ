@@ -55,13 +55,14 @@ templ settings() {
 						Trello - Authorizing With Trello's REST API
 					}
 				</p>
-				@component.Button(templ.Attributes{
-                    "type": "submit",
-                    "x-bind:disabled": "!canSubmit",
-                    },
-                    "ml-auto self-end") {
-					Save
-				}
+				<div class="ml-auto self-end">
+					@component.Button(component.ButtonProps{
+					Type: component.ButtonTypeSubmit,
+					Alpine: templ.Attributes{ "type": "submit",
+							"x-bind:disabled": "!canSubmit", },}) {
+						Save
+					}
+				</div>
 			</div>
 		</form>
 		@setupAuth(header.TrelloAuthKey, header.TrelloAuthToken)

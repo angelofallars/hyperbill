@@ -78,14 +78,15 @@ templ MakeInvoiceForm() {
 					x-text="message"
 					{ event.SetErrMessage.Listen("message = $event.detail.value")... }
 				></p>
-				@component.Button(templ.Attributes{
-                        "type": "submit",
-                        "id": "submit-invoice",
+				@component.Button(component.ButtonProps{
+						Type: component.ButtonTypeSubmit,
+						ID: "submit-invoice",
+						Alpine: templ.Attributes{
                         "x-bind:disabled": "!canSubmit",
                         "x-init": `$watch('isHTMXRequest', value =>
                                      buttonDisabledClass = value ? 'disabled:cursor-wait'
                                                                  : 'disabled:cursor-not-allowed')`,
-                        }) {
+						}}) {
 					Calculate
 				}
 			</div>

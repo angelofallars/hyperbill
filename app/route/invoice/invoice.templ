@@ -38,10 +38,10 @@ templ Invoice(data *domain.Invoice) {
 			</tr>
 		</table>
 		<div class="justify-self-end mt-5 flex flex-1 gap-3 justify-end items-end">
-			@component.Button(templ.Attributes{"disabled": true}) {
+			@component.Button(component.ButtonProps{Disabled: true}) {
 				Save to CSV (soon!)
 			}
-			@component.Button(templ.Attributes{"disabled": true}) {
+			@component.Button(component.ButtonProps{Disabled: true}) {
 				Save to PDF (soon!)
 			}
 		</div>
