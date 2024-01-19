@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/angelofallars/htmx-go"
@@ -30,12 +31,6 @@ func (a *API) RegisterRoutes() {
 	a.router.Post("/invoice", authRequired(handleCreateInvoice()))
 
 	a.router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("view/assets/"))))
-}
-
-func handleIndex() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		_ = invoiceview.Index().Render(context.Background(), w)
-	}
 }
 
 func showError(w http.ResponseWriter, code int, err error) {
