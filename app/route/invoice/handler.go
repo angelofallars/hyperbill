@@ -127,10 +127,20 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	client := trello.New(credentials.Key, credentials.Token)
 
-	cards, err := client.GetCards(req.trelloBoardID)
+	invoice, err := createInvoice(client, req)
 	if err != nil {
 		showError(w, http.StatusInternalServerError, err)
-		return
+	}
+
+	clearError(w)
+
+	_ = Invoice(invoice).Render(context.Background(), w)
+}
+
+func createInvoice(client *trello.Client, req *createInvoiceRequest) (*domain.Invoice, error) {
+	cards, err := client.GetCards(req.trelloBoardID)
+	if err != nil {
+		return nil, err
 	}
 
 	cardHistories := []cardHistory{}
@@ -138,8 +148,7 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 	for _, card := range cards {
 		actions, err := client.GetCardActions(card.ID)
 		if err != nil {
-			showError(w, http.StatusInternalServerError, err)
-			return
+			return nil, err
 		}
 
 		slices.SortFunc(actions, func(a trello.Action, b trello.Action) int {
@@ -163,8 +172,7 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 		for _, action := range actions {
 			actionDate, err = time.Parse(time.RFC3339Nano, action.Date)
 			if err != nil {
-				showError(w, http.StatusInternalServerError, err)
-				return
+				return nil, err
 			}
 
 			unixDate := actionDate.UnixNano()
@@ -218,7 +226,7 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	inv := domain.Invoice{
+	inv := &domain.Invoice{
 		StartDate: req.startDate,
 		EndDate:   req.endDate,
 		T5Report: domain.CategoryReport{
@@ -265,9 +273,7 @@ func handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
 
 	inv.TotalPrice = inv.T5Report.Price + inv.T4Report.Price + inv.T3Report.Price + inv.T2Report.Price + inv.T1Report.Price
 
-	clearError(w)
-
-	_ = Invoice(inv).Render(context.Background(), w)
+	return inv, nil
 }
 
 type createInvoiceRequest struct {
