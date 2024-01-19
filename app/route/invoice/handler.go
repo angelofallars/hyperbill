@@ -76,7 +76,7 @@ func handleGetBoards(svc service.Invoice) http.HandlerFunc {
 
 func handleCreateInvoice(svc service.Invoice) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &CreateInvoiceRequest{}
+		req := &createInvoiceRequest{}
 		if err := render.Bind(r, req); err != nil {
 			showError(w, http.StatusBadRequest, err)
 			return
@@ -109,7 +109,7 @@ func handleCreateInvoice(svc service.Invoice) http.HandlerFunc {
 	}
 }
 
-type CreateInvoiceRequest struct {
+type createInvoiceRequest struct {
 	TrelloBoardID string    `form:"board-id"`
 	StartDate     time.Time `form:"start-date"`
 	EndDate       time.Time `form:"end-date"`
@@ -121,7 +121,7 @@ type CreateInvoiceRequest struct {
 }
 
 // createInvoiceRequest satisfies [render.Binder]
-func (cir *CreateInvoiceRequest) Bind(r *http.Request) error {
+func (cir *createInvoiceRequest) Bind(r *http.Request) error {
 	if matched, _ := regexp.MatchString("^[0-9a-fA-F]{24}$", cir.TrelloBoardID); !matched {
 		return fmt.Errorf("Invalid trello board ID: %s", cir.TrelloBoardID)
 	}
