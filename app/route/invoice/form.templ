@@ -25,8 +25,8 @@ templ MakeInvoiceForm() {
 			hx-indicator="#htmx-indicator"
 			hx-disabled-elt="#submit-invoice"
 			x-data="{ canSubmit: false, isHTMXRequest: false }"
-			x-on:disable-submit.window="canSubmit = false"
-			x-on:enable-submit.window="canSubmit = true"
+			{ event.EnableSubmit.Listen(`canSubmit = true`)... }
+			{ event.DisableSubmit.Listen(`canSubmit = false`)... }
 			x-on:htmx:before-request="isHTMXRequest = true"
 			x-on:htmx:after-request="isHTMXRequest = false"
 			class="flex flex-col items-stretch h-full mb-0"

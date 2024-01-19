@@ -88,7 +88,7 @@ func handleGetBoards() http.HandlerFunc {
 			Retarget("#board-id").
 			Reswap(htmx.SwapOuterHTML).
 			Reselect("#board-id").
-			AddTrigger(htmx.Trigger("enable-submit")).
+			AddTrigger(event.TriggerEnableSubmit).
 			AddTrigger(event.TriggerSetErrMessage("")).
 			RenderTempl(r.Context(), w, Boards(props))
 	}

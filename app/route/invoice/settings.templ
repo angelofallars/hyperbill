@@ -3,12 +3,13 @@ package invoice
 import "github.com/angelofallars/hyperbill/app/component"
 import "github.com/angelofallars/hyperbill/app/svg"
 import "github.com/angelofallars/hyperbill/app/header"
+import "github.com/angelofallars/hyperbill/app/event"
 
 templ settings() {
 	<div
 		class="flex flex-col mt-3 items-start"
 		x-data="{ canSubmit: false, isOpen: false }"
-		x-on:open-settings.window="isOpen = true"
+		{ event.OpenSettings.Listen(`isOpen = true`)... }
 	>
 		<button class="flex flex-row self-end items-center gap-0.5 text-sky-700 font-semibold" x-on:click="isOpen = ! isOpen">
 			<div x-show="!isOpen">
