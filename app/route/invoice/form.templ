@@ -6,6 +6,7 @@ import (
 	"github.com/angelofallars/hyperbill/app/component"
 	"github.com/angelofallars/hyperbill/app/svg"
 	"github.com/angelofallars/hyperbill/app/event"
+	"github.com/angelofallars/hyperbill/internal/domain"
 )
 
 const inputStyle = "border px-2 h-7 bg-transparent disabled:text-gray-500 border-slate-400 border-1.5 rounded focus:border-transparent focus:ring-green-700 invalid:border-red-500 invalid:focus:ring-red-700 focus:outline-none focus:ring-2 selection:bg-green-500"
@@ -96,26 +97,21 @@ templ MakeInvoiceForm() {
 	}
 }
 
-type BoardProps struct {
-	Name string
-	ID   string
-}
-
-templ Boards(props []BoardProps) {
+templ Boards(boards []domain.Board) {
 	<label for="board-id" class="block mt-1.5 font-medium text-gray-900">Trello Board</label>
 	<select
 		name="board-id"
 		id="board-id"
 		class={ inputStyle, "overflow-ellipsis max-w-[20rem]" }
 		{ persistInput("board-id")... }
-		if len(props) == 0 {
+		if len(boards) == 0 {
 			disabled
 		}
 	>
-		if len(props) == 0 {
+		if len(boards) == 0 {
 			<option>{ "N/A" }</option>
 		}
-		for _, board := range props {
+		for _, board := range boards {
 			<option value={ board.ID }>{ board.Name }</option>
 		}
 	</select>

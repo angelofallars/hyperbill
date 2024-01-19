@@ -54,14 +54,6 @@ func handleGetBoards(svc service.Invoice) http.HandlerFunc {
 			showError(w, http.StatusInternalServerError, err)
 		}
 
-		props := make([]BoardProps, 0, len(boards))
-		for _, board := range boards {
-			props = append(props, BoardProps{
-				Name: board.Name,
-				ID:   board.ID,
-			})
-		}
-
 		_ = htmx.NewResponse().
 			Retarget("#board-id").
 			Reswap(htmx.SwapOuterHTML).
@@ -70,7 +62,7 @@ func handleGetBoards(svc service.Invoice) http.HandlerFunc {
 				event.TriggerEnableSubmit,
 				event.TriggerSetErrMessage(""),
 			).
-			RenderTempl(r.Context(), w, Boards(props))
+			RenderTempl(r.Context(), w, Boards(boards))
 	}
 }
 
